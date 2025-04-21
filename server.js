@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 const fs = require('fs').promises;
 const session = require('express-session');
-
+const app = express();
 // 📌 Configuración del servidor de correo (Poste.io u otro)
 const EMAIL_HOST = 'mail.ds-documentsolutions.com'; // Cambia a tu dominio real si es diferente
 const IMAP_PORT = 993; // Puerto IMAPS seguro
