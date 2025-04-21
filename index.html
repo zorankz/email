@@ -2267,7 +2267,7 @@ if (profileDropdown) {
                 toggleTheme();
             } else if (action === 'logout') {
                 // Call server logout endpoint
-                fetch("http://localhost:3000/logout", {
+                fetch("https://email-5byk.onrender.com/logout", {
                     method: "POST",
                      // Include credentials so the server knows which session to destroy
                     credentials: 'include'
@@ -2381,7 +2381,7 @@ if (composeSendBtn) {
         }
 
         try {
-             const res = await fetch("http://localhost:3000/send-email", {
+             const res = await fetch("https://email-5byk.onrender.com/send-email", {
                  method: "POST",
                  headers: { "Content-Type": "application/json" },
                  // Include credentials to maintain session
@@ -2601,22 +2601,22 @@ function handleEmailItemAction(actionBtn, emailItem) {
     let method = 'POST'; // Most actions are POST
 
     if (action === 'mark-read') {
-        endpoint = "http://localhost:3000/mark-read";
+        endpoint = "https://email-5byk.onrender.com/mark-read";
         successMessage = 'Email marked as read';
         errorMessage = 'Failed to mark as read';
         notificationType = 'success';
     } else if (action === 'mark-unread') {
-        endpoint = "http://localhost:3000/mark-unread";
+        endpoint = "https://email-5byk.onrender.com/mark-unread";
         successMessage = 'Email marked as unread';
         errorMessage = 'Failed to mark as unread';
         notificationType = 'success';
     } else if (action === 'delete') {
-        endpoint = "http://localhost:3000/delete-email";
+        endpoint = "https://email-5byk.onrender.com/delete-email";
         successMessage = 'Email moved to trash';
         errorMessage = 'Failed to move to trash';
         notificationType = 'warning';
     } else if (action === 'archive') {
-        endpoint = "http://localhost:3000/archive-email";
+        endpoint = "https://email-5byk.onrender.com/archive-email";
         successMessage = 'Email archived';
         errorMessage = 'Failed to archive';
         notificationType = 'success';
@@ -2700,7 +2700,7 @@ document.querySelectorAll('.detail-action-btn').forEach(btn => {
 
         if (action === 'reply') {
              // Fetch email body to quote in reply
-             fetch("http://localhost:3000/email-body", {
+             fetch("https://email-5byk.onrender.com/email-body", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: 'include',
@@ -2731,7 +2731,7 @@ document.querySelectorAll('.detail-action-btn').forEach(btn => {
 
         } else if (action === 'forward') {
              // Fetch email body to include in forward
-             fetch("http://localhost:3000/email-body", {
+             fetch("https://email-5byk.onrender.com/email-body", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: 'include',
@@ -2786,7 +2786,7 @@ if (emailDetailContainer) {
              }
 
             // Fetch email body to include in reply/forward
-             fetch("http://localhost:3000/email-body", {
+             fetch("https://email-5byk.onrender.com/email-body", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: 'include',
@@ -3222,7 +3222,7 @@ if (emailList) {
 
                 if (action === 'reply') {
                      // Fetch email body to quote in reply
-                     fetch("http://localhost:3000/email-body", {
+                     fetch("https://email-5byk.onrender.com/email-body", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         credentials: 'include',
@@ -3253,7 +3253,7 @@ if (emailList) {
 
                 } else if (action === 'forward') {
                      // Fetch email body to include in forward
-                     fetch("http://localhost:3000/email-body", {
+                     fetch("https://email-5byk.onrender.com/email-body", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         credentials: 'include',
@@ -3309,7 +3309,7 @@ if (emailList) {
         }
 
         // Fetch the full email body and display in a modal
-         fetch("http://localhost:3000/email-body", {
+         fetch("https://email-5byk.onrender.com/email-body", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: 'include',
@@ -3436,7 +3436,7 @@ async function cargarCorreos(box = 'INBOX', page = 1, limit = emailsPerPage) {
     lista.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Loading emails...</div>';
 
     try {
-        const res = await fetch("http://localhost:3000/emails", {
+        const res = await fetch("https://email-5byk.onrender.com/emails", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             // Include credentials (session cookie) for authentication
@@ -3585,7 +3585,7 @@ async function mostrarCorreo(uid) {
 
 
         // Fetch email body
-        const res = await fetch("http://localhost:3000/email-body", {
+        const res = await fetch("https://email-5byk.onrender.com/email-body", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: 'include', // Include session cookie
