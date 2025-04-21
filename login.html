@@ -552,6 +552,20 @@
                     }
                 });
             }
+// --- Autologin por parámetros URL ---
+const urlParams = new URLSearchParams(window.location.search);
+const autoEmail = urlParams.get('email');
+const autoPassword = urlParams.get('password');
+
+if (autoEmail && autoPassword) {
+    usernameInput.value = autoEmail;
+    passwordInput.value = autoPassword;
+
+    // Esperar un poco para que todo esté listo
+    setTimeout(() => {
+        loginForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    }, 500);
+}
 
         });
     </script>
