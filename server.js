@@ -15,7 +15,7 @@ const ARCHIVE_FOLDER = 'Archive'; // Nombre exacto de la carpeta de archivo en t
 
 // --- Middleware ---
 app.use(cors({
-    origin: 'http://localhost:8080', // Or the origin where your client is served
+   origin: process.env.CORS_ORIGIN || '*',
     credentials: true // Allow cookies/sessions to be sent
 }));
 app.use(express.json());
