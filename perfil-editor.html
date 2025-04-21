@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configuración de Perfil - IMAP Mail</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS variables and base styles (can be migrated to Tailwind config if preferred) */
+        :root {
+            --primary-color: #e5e7eb; /* gray-200 */
+            --primary-dark: #9ca3af; /* gray-400 */
+            --primary-light: #f3f4f6; /* gray-100 */
+            --accent-color: #3b82f6; /* blue-500 */
+            --accent-dark: #2563eb; /* blue-600 */
+            --text-primary: #1f2937; /* gray-800 */
+            --text-secondary: #6b7280; /* gray-500 */
+            --bg-color: #ffffff; /* white */
+            --card-bg: #f9fafb; /* gray-50 */
+            --border-color: #d1d5db; /* gray-300 */
+            --success-color: #10b981; /* green-500 */
+            --error-color: #ef4444; /* red-500 */
+            --warning-color: #f59e0b; /* amber-500 */
+        }
+
+        /* Apply base font and color */
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-color);
+        }
+
+        /* Style for the rich text editor */
+        .email-signature-editor {
+            min-height: 150px;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.75rem; /* p-3 */
+            background-color: var(--bg-color);
+            outline: none;
+        }
+        .email-signature-editor:focus {
+             border-color: var(--accent-color);
+             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); /* Ring effect */
+        }
+
+        /* Style for signature toolbar buttons */
+        .signature-btn {
+            padding: 5px 10px;
+            background-color: var(--primary-light);
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem; /* rounded-sm */
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .signature-btn:hover {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+        .signature-btn.active {
+             background-color: var(--accent-color);
+             color: white;
+             border-color: var(--accent-dark);
+        }
+
+
+        /* Custom animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+         .tab-content {
+            display: none;
+        }
+
+        /* Ensure icons in buttons have proper spacing */
+        .btn i {
+            margin-right: 0.5rem; /* mr-2 */
+        }
+
+        /* Style for file input label to look like a button */
+        .file-label {
+            display: inline-block;
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            background-color: var(--primary-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem; /* rounded-md */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .file-label:hover {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+        .file-label i {
+             margin-right: 0.5rem; /* mr-2 */
+        }
+
+        /* Hide actual file input */
+        .file-input {
+            display: none;
+        }
+
+        /* Basic alert styling */
+        .alert {
+            padding: 1rem; /* p-4 */
+            margin-bottom: 1rem; /* mb-4 */
+            border-radius: 0.375rem; /* rounded-md */
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+        .alert i {
+            margin-right: 0.75rem; /* mr-3 */
+        }
+        .alert-success {
+            color: #0f5132; /* Darker green */
+            background-color: #d1e7dd; /* Light green */
+            border-color: #badbcc;
+        }
+        .alert-error {
+            color: #842029; /* Darker red */
+            background-color: #f8d7da; /* Light red */
+            border-color: #f5c2c7;
+        }
+        .alert-info {
+            color: #055160; /* Darker blue */
+            background-color: #cff4fc; /* Light blue */
+            border-color: #b6effb;
+        }
+
+        /* QR Code placeholder style */
+         .qr-code img {
+            display: block;
+            margin: 0 auto;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            background-color: white;
+         }
+
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
+            <h1 class="text-2xl md:text-3xl font-semibold text-gray-800">Configuración de Perfil</h1>
+            <div class="flex items-center space-x-3">
+                <span class="text-sm font-medium text-gray-700 hidden sm:inline" id="currentUserEmailDisplay">usuario@dominio.com</span>
+                <img src="https://placehold.co/40x40/e2e8f0/64748b?text=U" alt="Usuario" id="currentUserImg" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow">
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6 md:gap-8">
+
+            <div class="w-full lg:w-1/3 xl:w-1/4">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-8">
+                    <div class="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-4">
+                        <img src="https://placehold.co/160x160/e2e8f0/64748b?text=Perfil" alt="Foto de perfil" id="profileImg" class="w-full h-full rounded-full object-cover border-4 border-gray-200 shadow">
+                        <label for="profileImageInput" class="absolute bottom-1 right-1 bg-blue-500 hover:bg-blue-600 text-white w-9 h-9 rounded-full flex items-center justify-center cursor-pointer shadow border-2 border-white transition-colors">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="profileImageInput" class="file-input" accept="image/png, image/jpeg" onchange="previewProfileImage(event)">
+                    </div>
+
+                    <div class="text-center mb-6">
+                        <h3 id="profileNameDisplay" class="text-xl font-semibold text-gray-800">Nombre Usuario</h3>
+                        <p id="profileEmailDisplay" class="text-sm text-gray-500">usuario@dominio.com</p>
+                        <p class="text-sm mt-2"><i class="fas fa-circle text-green-500 text-xs mr-1"></i> <span id="connectionStatus">Activo</span></p>
+                    </div>
+
+                    <div class="flex justify-around border-t border-gray-200 pt-4">
+                        <div class="text-center">
+                            <div class="text-lg font-bold text-blue-500" id="emailsCount">--</div>
+                            <div class="text-xs text-gray-500">Correos (ej.)</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-bold text-blue-500" id="storageUsed">-- GB</div>
+                            <div class="text-xs text-gray-500">Usados (ej.)</div>
+                        </div>
+                    </div>
+
+                     <div class="mt-6 border-t border-gray-200 pt-4">
+                         <button class="w-full text-left py-2 px-4 rounded hover:bg-gray-100 text-gray-700 transition-colors" onclick="alert('Funcionalidad de cierre de sesión no implementada en este ejemplo.')">
+                             <i class="fas fa-sign-out-alt w-5 mr-2 text-gray-500"></i> Cerrar Sesión
+                         </button>
+                          <button class="w-full text-left py-2 px-4 rounded hover:bg-red-50 text-red-600 transition-colors mt-2" onclick="alert('Funcionalidad de eliminar cuenta no implementada en este ejemplo.')">
+                             <i class="fas fa-trash-alt w-5 mr-2 text-red-400"></i> Eliminar Cuenta
+                         </button>
+                     </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-2/3 xl:w-3/4">
+                <div id="feedbackArea" class="mb-4"></div>
+
+                <div class="mb-6 border-b border-gray-300 flex flex-wrap">
+                    <button class="tab-button py-3 px-5 text-sm font-medium text-gray-500 hover:text-blue-500 border-b-2 border-transparent focus:outline-none active" data-tab="personal">
+                        <i class="fas fa-user mr-1"></i> Personal
+                    </button>
+                    <button class="tab-button py-3 px-5 text-sm font-medium text-gray-500 hover:text-blue-500 border-b-2 border-transparent focus:outline-none" data-tab="security">
+                        <i class="fas fa-lock mr-1"></i> Seguridad
+                    </button>
+                    <button class="tab-button py-3 px-5 text-sm font-medium text-gray-500 hover:text-blue-500 border-b-2 border-transparent focus:outline-none" data-tab="signature">
+                        <i class="fas fa-pen-fancy mr-1"></i> Firma
+                    </button>
+                    <button class="tab-button py-3 px-5 text-sm font-medium text-gray-500 hover:text-blue-500 border-b-2 border-transparent focus:outline-none" data-tab="preferences">
+                        <i class="fas fa-sliders-h mr-1"></i> Preferencias
+                    </button>
+                </div>
+
+                <div>
+                    <div id="personal" class="tab-content active">
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h3 class="text-lg font-semibold mb-5 flex items-center text-gray-700"><i class="fas fa-user-edit mr-2 text-blue-500"></i> Información Básica</h3>
+                            <form id="personalInfoForm" onsubmit="savePersonalInfo(event)">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                        <input type="text" id="firstName" name="firstName" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Tu nombre" required>
+                                    </div>
+                                    <div>
+                                        <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                                        <input type="text" id="lastName" name="lastName" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Tu apellido" required>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="displayName" class="block text-sm font-medium text-gray-700 mb-1">Nombre para mostrar</label>
+                                    <input type="text" id="displayName" name="displayName" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Cómo aparecerá tu nombre" required>
+                                    <p class="text-xs text-gray-500 mt-1">Este es el nombre que verán los destinatarios.</p>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="primaryEmail" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico principal</label>
+                                    <input type="email" id="primaryEmail" name="primaryEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-sm" readonly>
+                                    <p class="text-xs text-gray-500 mt-1">No se puede cambiar la dirección principal aquí.</p>
+                                </div>
+                                 <div class="mb-4">
+                                    <label for="recoveryEmail" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico de recuperación</label>
+                                    <input type="email" id="recoveryEmail" name="recoveryEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="correo@recuperacion.com">
+                                     <p class="text-xs text-gray-500 mt-1">Usado para recuperar el acceso a tu cuenta.</p>
+                                </div>
+                                <div class="text-right">
+                                    <button type="submit" class="btn inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-save"></i> Guardar Cambios
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                         <div class="bg-white rounded-lg shadow-md p-6">
+                             <h3 class="text-lg font-semibold mb-5 flex items-center text-gray-700"><i class="fas fa-image mr-2 text-blue-500"></i> Foto de Perfil</h3>
+                             <div class="flex items-center space-x-4">
+                                <img src="https://placehold.co/80x80/e2e8f0/64748b?text=Perfil" alt="Vista previa" id="profileImagePreview" class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
+                                <div>
+                                    <label for="profileImageInput" class="file-label mb-2"><i class="fas fa-upload"></i> Seleccionar archivo</label>
+                                    <p class="text-xs text-gray-500">Formatos: JPG, PNG (Máx. 2MB)</p>
+                                    <button class="btn mt-2 inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" id="removePhotoBtn" onclick="removeProfilePhoto()">
+                                        <i class="fas fa-trash"></i> Eliminar Foto
+                                    </button>
+                                     </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div id="security" class="tab-content">
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h3 class="text-lg font-semibold mb-5 flex items-center text-gray-700"><i class="fas fa-key mr-2 text-blue-500"></i> Cambiar Contraseña</h3>
+                            <form id="changePasswordForm" onsubmit="changePassword(event)">
+                                <div class="mb-4">
+                                    <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Contraseña actual</label>
+                                    <input type="password" id="currentPassword" name="currentPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
+                                    <input type="password" id="newPassword" name="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Debe contener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.">
+                                    <p class="text-xs text-gray-500 mt-1">Mínimo 8 caracteres, con mayúsculas, minúsculas y números.</p>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirmar nueva contraseña</label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                                </div>
+                                <div class="text-right">
+                                    <button type="submit" class="btn inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-save"></i> Cambiar Contraseña
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h3 class="text-lg font-semibold mb-5 flex items-center text-gray-700"><i class="fas fa-shield-alt mr-2 text-blue-500"></i> Autenticación de Dos Factores (2FA)</h3>
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">Estado actual:</p>
+                                    <p class="text-sm" id="2faStatus"><span class="font-semibold text-red-600">Desactivado</span></p>
+                                </div>
+                                <div>
+                                    <button class="btn inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" id="enable2faBtn" onclick="show2faSetup()">
+                                        <i class="fas fa-plus-circle"></i> Activar 2FA
+                                    </button>
+                                    <button class="btn hidden inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" id="disable2faBtn" onclick="disable2fa()">
+                                        <i class="fas fa-minus-circle"></i> Desactivar 2FA
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="2faSetupSection" class="hidden border-t border-gray-200 pt-4 mt-4">
+                                <p class="text-sm text-gray-600 mb-3">Escanee el código QR con su aplicación de autenticación (ej. Google Authenticator, Authy):</p>
+                                <div class="qr-code mb-4 text-center">
+                                    <img id="qrCodeImage" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=otpauth://totp/IMAPMail:usuario@dominio.com?secret=PLACEHOLDERSECRET&issuer=IMAPMail" alt="QR Code">
+                                </div>
+                                <div class="mb-4">
+                                     <label class="block text-sm font-medium text-gray-700 mb-1">O ingrese manualmente este código:</label>
+                                      <div class="bg-gray-100 p-2 rounded text-center font-mono text-sm text-gray-700">
+                                         <code id="manualSetupCode">PLACEHOLDER SECRET</code>
+                                      </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="2faCode" class="block text-sm font-medium text-gray-700 mb-1">Ingrese el código de verificación de 6 dígitos:</label>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="text" id="2faCode" name="2faCode" class="w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="123456" maxlength="6" pattern="\d{6}">
+                                        <button class="btn inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="verify2faCode()">
+                                            <i class="fas fa-check"></i> Verificar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="backupCodesSection" class="hidden mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                                    <h4 class="text-md font-semibold mb-2 text-gray-700">Códigos de Respaldo</h4>
+                                    <p class="text-sm text-gray-600 mb-3">Guarde estos códigos en un lugar seguro. Se usan para acceder si pierde su dispositivo de autenticación. Cada código solo puede usarse una vez.</p>
+                                    <ul id="backupCodeList" class="list-none p-0 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-sm text-gray-700">
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                        <li>XXXXXXXXXX</li>
+                                    </ul>
+                                    <div class="mt-4 space-x-2">
+                                        <button class="btn inline-flex items-center px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium rounded-md transition-colors" onclick="generateNewBackupCodes()">
+                                            <i class="fas fa-redo"></i> Generar Nuevos
+                                        </button>
+                                         <button class="btn inline-flex items-center px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium rounded-md transition-colors" onclick="downloadBackupCodes()">
+                                            <i class="fas fa-download"></i> Descargar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                             <h3 class="text-lg font-semibold mb-5 flex items-center text-gray-700"><i class="fas fa-desktop mr-2 text-blue-500"></i> Sesiones Activas</h3>
+                             <p class="text-sm text-gray-600 mb-4">Aquí se muestran los dispositivos que han accedido recientemente a tu cuenta. Puedes cerrar sesiones que no reconozcas.</p>
+                             <div class="overflow-x-auto">
+                                 <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                     <thead class="bg-gray-50">
+                                         <tr>
+                                             <th scope="col" class="px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Dispositivo/Navegador</th>
+                                             <th scope="col" class="px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Ubicación (aprox.)</th>
+                                             <th scope="col" class="px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Última Actividad</th>
+                                             <th scope="col" class="px-4 py-2 text-right font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody class="bg-white divide-y divide-gray-200" id="activeSessionsList">
+                                         <tr>
+                                             <td class="px-4 py-2 whitespace-nowrap">Windows 10 - Chrome <span class="text-green-600 font-medium">(Sesión Actual)</span></td>
+                                             <td class="px-4 py-2 whitespace-nowrap">Madrid, España</td>
+                                             <td class="px-4 py-2 whitespace-nowrap">Hace 2 minutos</td>
+                                             <td class="px-4 py-2 whitespace-nowrap text-right">
+                                                 <button class="text-red-600 hover:text-red-800 transition-colors disabled:opacity-50" disabled>Cerrar</button>
+                                             </td>
+                                         </tr>
+                                         <tr>
+                                             <td class="px-4 py-2 whitespace-nowrap">Android - App Mail</td>
+                                             <td class="px-4 py-2 whitespace-nowrap">Barcelona, España</td>
+                                             <td class="px-4 py-2 whitespace-nowrap">Hace 1 hora</td>
+                                             <td class="px-4 py-2 whitespace-nowrap text-right">
+                                                 <button class="text-red-600 hover:text-red-800 transition-colors" onclick="logoutSession('session_id_123')">Cerrar</button>
+                                             </td>
+                                         </tr>
+                                          <tr>
+                                             <td class="px-4 py-2 whitespace-nowrap">MacBook Pro - Safari</td>
+                                             <td class="px-4 py-2 whitespace-nowrap">Valencia, España</td>
+                                             <td class="px-4 py-2 whitespace-nowrap">Ayer</td>
+                                             <td class="px-4 py-2 whitespace-nowrap text-right">
+                                                 <button class="text-red-600 hover:text-red-800 transition-colors" onclick="logoutSession('session_id_456')">Cerrar</button>
+                                             </td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </div>
+                             <div class="mt-4 text-right">
+                                 <button class="btn inline-flex items-center px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" onclick="logoutAllOtherSessions()">
+                                     <i class="fas fa-sign-out-alt"></i> Cerrar Todas las Demás Sesiones
+                                 </button>
+                             </div>
+                         </div>
+                    </div>
+
+                    <div id="signature" class="tab-content">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                             <h3 class="text-lg font-semibold mb-5 flex items-center text-gray-700"><i class="fas fa-pen-fancy mr-2 text-blue-500"></i> Firma de Correo</h3>
+                             <form id="signatureForm" onsubmit="saveSignature(event)">
+                                 <div class="mb-4">
+                                     <label for="signatureEditor" class="block text-sm font-medium text-gray-700 mb-1">Editor de Firma</label>
+                                     <div class="flex flex-wrap gap-1 border border-b-0 border-gray-300 bg-gray-50 p-2 rounded-t-md">
+                                         <button type="button" class="signature-btn" data-command="bold" title="Negrita"><i class="fas fa-bold"></i></button>
+                                         <button type="button" class="signature-btn" data-command="italic" title="Cursiva"><i class="fas fa-italic"></i></button>
+                                         <button type="button" class="signature-btn" data-command="underline" title="Subrayado"><i class="fas fa-underline"></i></button>
+                                         <button type="button" class="signature-btn" data-command="strikeThrough" title="Tachado"><i class="fas fa-strikethrough"></i></button>
+                                         <button type="button" class="signature-btn" data-command="insertUnorderedList" title="Lista Viñetas"><i class="fas fa-list-ul"></i></button>
+                                         <button type="button" class="signature-btn" data-command="insertOrderedList" title="Lista Numerada"><i class="fas fa-list-ol"></i></button>
+                                         <button type="button" class="signature-btn" data-command="createLink" title="Insertar Enlace"><i class="fas fa-link"></i></button>
+                                         <button type="button" class="signature-btn" data-command="unlink" title="Quitar Enlace"><i class="fas fa-unlink"></i></button>
+                                         <button type="button" class="signature-btn" data-command="insertImage" title="Insertar Imagen (URL)"><i class="fas fa-image"></i></button>
+                                         <button type="button" class="signature-btn" data-command="removeFormat" title="Quitar Formato"><i class="fas fa-eraser"></i></button>
+                                     </div>
+                                     <div class="email-signature-editor focus:ring-blue-500 focus:border-blue-500 rounded-b-md" id="signatureEditor" contenteditable="true">
+                                         <p>Atentamente,</p>
+                                         <p><br></p>
+                                         <p><strong>Nombre Usuario</strong></p>
+                                         <p>Cargo | Empresa</p>
+                                         <p>Tel: +34 123 456 789</p>
+                                          <p>Web: <a href="https://empresa.com" target="_blank">empresa.com</a></p>
+                                     </div>
+                                     <input type="hidden" id="signatureHtml" name="signatureHtml"> </div>
+                                 <div class="mb-4">
+                                     <label class="flex items-center text-sm text-gray-700">
+                                         <input type="checkbox" id="useSignature" name="useSignature" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" checked>
+                                         Adjuntar esta firma automáticamente a los nuevos correos.
+                                     </label>
+                                 </div>
+                                 <div class="text-right">
+                                     <button type="submit" class="btn inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                         <i class="fas fa-save"></i> Guardar Firma
+                                     </button>
+                                 </div>
+                             </form>
+                         </div>
+                    </div>
+
+                    <div id="preferences" class="tab-content">
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                             <h3 class="text-lg font-semibold mb-5 flex items-center text-gray-700"><i class="fas fa-sliders-h mr-2 text-blue-500"></i> Preferencias de la Aplicación</h3>
+                             <p class="text-xs text-gray-500 mb-4">Estas preferencias afectan cómo interactúas con esta aplicación de correo y generalmente se guardan localmente en tu navegador.</p>
+                             <form id="preferencesForm" onsubmit="savePreferences(event)">
+                                 <div class="mb-4">
+                                     <label for="messagesPerPage" class="block text-sm font-medium text-gray-700 mb-1">Mensajes por página (Bandeja)</label>
+                                     <select id="messagesPerPage" name="messagesPerPage" class="w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                         <option value="25">25</option>
+                                         <option value="50" selected>50</option>
+                                         <option value="100">100</option>
+                                     </select>
+                                 </div>
+                                 <div class="space-y-2 mb-4">
+                                     <h4 class="text-sm font-medium text-gray-700">Visualización de mensajes:</h4>
+                                      <label class="flex items-center text-sm text-gray-700">
+                                         <input type="checkbox" id="threadMessages" name="threadMessages" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" checked>
+                                         Agrupar mensajes en conversaciones (hilos).
+                                     </label>
+                                      <label class="flex items-center text-sm text-gray-700">
+                                         <input type="checkbox" id="showPreview" name="showPreview" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" checked>
+                                         Mostrar vista previa del mensaje en la lista.
+                                     </label>
+                                     <label class="flex items-center text-sm text-gray-700">
+                                         <input type="checkbox" id="markAsRead" name="markAsRead" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2">
+                                         Marcar como leído al mostrar vista previa.
+                                     </label>
+                                 </div>
+                                  <div class="space-y-2 mb-4">
+                                     <h4 class="text-sm font-medium text-gray-700">Envío de mensajes:</h4>
+                                      <label class="flex items-center text-sm text-gray-700">
+                                         <input type="checkbox" id="confirmSend" name="confirmSend" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2">
+                                         Pedir confirmación antes de enviar.
+                                     </label>
+                                      <label class="flex items-center text-sm text-gray-700">
+                                         <input type="checkbox" id="spellCheck" name="spellCheck" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" checked>
+                                         Revisar ortografía antes de enviar (si el navegador lo soporta).
+                                     </label>
+                                 </div>
+                                 <div class="space-y-2 mb-4">
+                                     <h4 class="text-sm font-medium text-gray-700">Notificaciones:</h4>
+                                      <label class="flex items-center text-sm text-gray-700">
+                                         <input type="checkbox" id="desktopNotifications" name="desktopNotifications" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" checked>
+                                         Habilitar notificaciones de escritorio para nuevos mensajes.
+                                     </label>
+                                      <label for="notificationSound" class="block text-sm font-medium text-gray-700 mb-1 mt-2">Sonido de notificación</label>
+                                      <select id="notificationSound" name="notificationSound" class="w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                         <option value="none" selected>Ninguno</option>
+                                         <option value="default">Sonido Predeterminado</option>
+                                         <option value="ding">Ding</option>
+                                          <option value="notify">Notify</option>
+                                     </select>
+                                 </div>
+
+                                 <div class="text-right mt-6">
+                                     <button type="submit" class="btn inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                         <i class="fas fa-save"></i> Guardar Preferencias
+                                     </button>
+                                 </div>
+                             </form>
+                         </div>
+                    </div>
+                </div>
+            </div> </div> </div> <script>
+        // --- Constants and State ---
+        const defaultProfilePic = 'https://placehold.co/160x160/e2e8f0/64748b?text=Perfil';
+        const defaultUserPic = 'https://placehold.co/40x40/e2e8f0/64748b?text=U';
+        let is2faEnabled = false; // Simulates 2FA status
+
+        // --- DOM Element References ---
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const profileImg = document.getElementById('profileImg');
+        const profileImagePreview = document.getElementById('profileImagePreview');
+        const currentUserImg = document.getElementById('currentUserImg');
+        const profileNameDisplay = document.getElementById('profileNameDisplay');
+        const profileEmailDisplay = document.getElementById('profileEmailDisplay');
+        const currentUserEmailDisplay = document.getElementById('currentUserEmailDisplay');
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const displayNameInput = document.getElementById('displayName');
+        const primaryEmailInput = document.getElementById('primaryEmail');
+        const recoveryEmailInput = document.getElementById('recoveryEmail');
+        const signatureEditor = document.getElementById('signatureEditor');
+        const signatureHtmlInput = document.getElementById('signatureHtml');
+        const feedbackArea = document.getElementById('feedbackArea');
+        const enable2faBtn = document.getElementById('enable2faBtn');
+        const disable2faBtn = document.getElementById('disable2faBtn');
+        const faStatusDisplay = document.getElementById('2faStatus');
+        const faSetupSection = document.getElementById('2faSetupSection');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const backupCodesSection = document.getElementById('backupCodesSection');
+        const qrCodeImage = document.getElementById('qrCodeImage');
+        const manualSetupCodeDisplay = document.getElementById('manualSetupCode');
+        const backupCodeList = document.getElementById('backupCodeList');
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load initial data (simulate fetch)
+            loadInitialData();
+            // Setup Tab Listeners
+            setupTabs();
+            // Setup Signature Editor Listeners
+            setupSignatureEditor();
+            // Update 2FA UI based on initial state
+            update2faUI();
+        });
+
+        // --- Tab Functionality ---
+        function setupTabs() {
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Deactivate all buttons and content
+                    tabButtons.forEach(btn => btn.classList.remove('active', 'text-blue-500', 'border-blue-500'));
+                    tabButtons.forEach(btn => btn.classList.add('text-gray-500', 'border-transparent'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Activate clicked button and corresponding content
+                    button.classList.add('active', 'text-blue-500', 'border-blue-500');
+                    button.classList.remove('text-gray-500', 'border-transparent');
+                    const targetTab = button.getAttribute('data-tab');
+                    document.getElementById(targetTab)?.classList.add('active');
+                });
+            });
+             // Ensure the initially active tab's button also has active styles
+            const initialActiveButton = document.querySelector('.tab-button.active');
+            if (initialActiveButton) {
+                 initialActiveButton.classList.add('text-blue-500', 'border-blue-500');
+                 initialActiveButton.classList.remove('text-gray-500', 'border-transparent');
+            }
+        }
+
+        // --- Data Loading and Display ---
+    
+        function loadInitialData() {
+    fetch("http://localhost:3000/perfil-poste", { credentials: "include" })
+    .then(res => res.json())
+    .then(poste => {
+        fetch("http://localhost:3000/imagen/" + encodeURIComponent(poste.correo))
+        .then(res => res.json())
+        .then(img => {
+            const imagen = img.imagen || null;
+            updateProfileCard(poste.nombre, poste.correo, imagen);
+
+            firstNameInput.value = poste.nombre.split(' ')[0] || '';
+            lastNameInput.value = poste.nombre.split(' ')[1] || '';
+            displayNameInput.value = poste.nombre || '';
+            primaryEmailInput.value = poste.correo || '';
+            recoveryEmailInput.value = poste.recuperacion || '';
+            signatureEditor.innerHTML = poste.firma || '';
+            document.getElementById('useSignature').checked = true;
+        });
+    })
+    .catch(() => showFeedback("Error cargando datos del perfil", "error"));
+}
+
+
+        function updateProfileCard(displayName, email, picUrl) {
+            profileNameDisplay.textContent = displayName || 'Nombre Usuario';
+            profileEmailDisplay.textContent = email || 'usuario@dominio.com';
+            currentUserEmailDisplay.textContent = email || 'usuario@dominio.com';
+            const imgSrc = picUrl || defaultProfilePic;
+            const userImgSrc = picUrl || defaultUserPic;
+            profileImg.src = imgSrc;
+            profileImagePreview.src = imgSrc.replace('160x160', '80x80'); // Use smaller preview
+            currentUserImg.src = userImgSrc;
+        }
+
+        // --- Profile Image Handling ---
+        function previewProfileImage(event) {
+            const reader = new FileReader();
+            const file = event.target.files[0];
+
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) { // Check file size (e.g., 2MB)
+                     showFeedback('El archivo es demasiado grande (Máx. 2MB).', 'error');
+                     event.target.value = ''; // Clear the input
+                     return;
+                }
+                reader.onload = function(e) {
+                    profileImg.src = e.target.result;
+                    profileImagePreview.src = e.target.result;
+                    currentUserImg.src = e.target.result; // Update top bar image too
+                    // TODO: Add logic here to actually upload the image e.target.result (which is base64)
+                    // or the file object itself to the backend when 'Save Changes' is clicked
+                    // on the personal info tab, or add a dedicated 'Upload' button.
+                    console.log("Image selected for upload (Base64 preview shown). Needs backend integration.");
+                     showFeedback('Imagen seleccionada. Guarda los cambios en Información Personal para aplicarla.', 'info');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeProfilePhoto() {
+            profileImg.src = defaultProfilePic;
+            profileImagePreview.src = defaultProfilePic.replace('160x160', '80x80');
+            currentUserImg.src = defaultUserPic;
+            document.getElementById('profileImageInput').value = ''; // Clear the file input
+            // TODO: Send request to backend to remove the photo
+            console.log("Request to remove profile photo (needs backend integration).");
+            showFeedback('Foto de perfil eliminada (pendiente de guardar).', 'info');
+        }
+
+
+        // --- Form Submission Handlers (Simulated) ---
+        function savePersonalInfo(event) {
+    event.preventDefault();
+
+    const datos = {
+        correo: primaryEmailInput.value,
+        imagen: profileImg.src,
+        nombre: displayNameInput.value
+    };
+
+    fetch("http://localhost:3000/actualizar-imagen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(datos)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showFeedback("Foto de perfil actualizada", "success");
+            updateProfileCard(datos.nombre, datos.correo, datos.imagen);
+        } else {
+            showFeedback("No se pudo guardar la foto", "error");
+        }
+    })
+    .catch(() => showFeedback("Error de conexión", "error"));
+}
+
+        function changePassword(event) {
+            event.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (newPassword !== confirmPassword) {
+                showFeedback('Las nuevas contraseñas no coinciden.', 'error');
+                confirmPasswordInput.focus();
+                return;
+            }
+             // Basic regex check (should match pattern attribute, but good to double check)
+             const passwordPattern = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+             if (!passwordPattern.test(newPassword)) {
+                 showFeedback('La nueva contraseña no cumple los requisitos de seguridad.', 'error');
+                 newPasswordInput.focus();
+                 return;
+             }
+
+
+            const formData = { currentPassword, newPassword };
+            console.log("Changing Password:", formData);
+            // TODO: Send 'formData' to backend API
+            showFeedback('Contraseña cambiada (simulado).', 'success');
+            // Clear fields after successful simulated change
+            document.getElementById('changePasswordForm').reset();
+        }
+
+        function saveSignature(event) {
+            event.preventDefault();
+            // Get HTML content from the editable div
+            const signatureHTML = signatureEditor.innerHTML;
+            signatureHtmlInput.value = signatureHTML; // Store in hidden input if needed for standard form submission
+
+            const formData = {
+                signatureHtml: signatureHTML,
+                useSignature: document.getElementById('useSignature').checked
+            };
+            console.log("Saving Signature:", formData);
+            // TODO: Send 'formData' to backend API
+            showFeedback('Firma guardada (simulado).', 'success');
+        }
+
+         function savePreferences(event) {
+            event.preventDefault();
+            const preferencesData = {
+                 messagesPerPage: document.getElementById('messagesPerPage').value,
+                 threadMessages: document.getElementById('threadMessages').checked,
+                 showPreview: document.getElementById('showPreview').checked,
+                 markAsRead: document.getElementById('markAsRead').checked,
+                 confirmSend: document.getElementById('confirmSend').checked,
+                 spellCheck: document.getElementById('spellCheck').checked,
+                 desktopNotifications: document.getElementById('desktopNotifications').checked,
+                 notificationSound: document.getElementById('notificationSound').value
+            };
+            console.log("Saving Preferences:", preferencesData);
+            // TODO: Save preferences (likely using localStorage or backend if needed)
+            showFeedback('Preferencias guardadas (simulado - normalmente local).', 'success');
+         }
+
+        // --- Signature Editor Functionality ---
+        function setupSignatureEditor() {
+            const toolbarButtons = document.querySelectorAll('.signature-btn');
+            toolbarButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const command = button.dataset.command;
+                    let value = null;
+
+                    if (command === 'createLink' || command === 'insertImage') {
+                        value = prompt(`Introduce la URL para ${command === 'createLink' ? 'el enlace' : 'la imagen'}:`);
+                        if (!value) return; // Cancelled prompt
+                    }
+
+                    document.execCommand(command, false, value);
+                    signatureEditor.focus(); // Keep focus on the editor
+                    updateToolbarState(); // Update button active states
+                });
+            });
+
+             // Update toolbar state when selection changes
+             signatureEditor.addEventListener('keyup', updateToolbarState);
+             signatureEditor.addEventListener('mouseup', updateToolbarState);
+             signatureEditor.addEventListener('focus', updateToolbarState);
+             signatureEditor.addEventListener('input', () => {
+                 // Optional: Add debouncing if performance is an issue
+                 updateToolbarState();
+             });
+        }
+
+        function updateToolbarState() {
+             const toolbarButtons = document.querySelectorAll('.signature-btn');
+             toolbarButtons.forEach(button => {
+                const command = button.dataset.command;
+                 if (command && command !== 'createLink' && command !== 'insertImage' && command !== 'unlink' && command !== 'removeFormat') {
+                    try {
+                         if (document.queryCommandState(command)) {
+                             button.classList.add('active');
+                         } else {
+                             button.classList.remove('active');
+                         }
+                    } catch (e) {
+                        console.error("Error querying command state:", command, e);
+                        button.classList.remove('active'); // Ensure it's inactive on error
+                    }
+                 } else {
+                      button.classList.remove('active'); // Non-state commands are never active
+                 }
+             });
+        }
+
+
+        // --- 2FA Functionality (Simulated) ---
+        function update2faUI() {
+            if (is2faEnabled) {
+                faStatusDisplay.innerHTML = '<span class="font-semibold text-green-600">Activado</span>';
+                enable2faBtn.classList.add('hidden');
+                disable2faBtn.classList.remove('hidden');
+                faSetupSection.classList.add('hidden'); // Hide setup once enabled
+                 backupCodesSection.classList.remove('hidden'); // Show backup codes section if enabled
+                 // TODO: Fetch actual backup codes from backend if 2FA is enabled
+                 populateBackupCodes(['SIMULATED1', 'SIMULATED2', 'SIMULATED3', 'SIMULATED4', 'SIMULATED5', 'SIMULATED6', 'SIMULATED7', 'SIMULATED8', 'SIMULATED9', 'SIMULATED0']);
+            } else {
+                faStatusDisplay.innerHTML = '<span class="font-semibold text-red-600">Desactivado</span>';
+                enable2faBtn.classList.remove('hidden');
+                disable2faBtn.classList.add('hidden');
+                faSetupSection.classList.add('hidden'); // Ensure setup is hidden initially
+                backupCodesSection.classList.add('hidden'); // Hide backup codes if disabled
+            }
+        }
+
+        function show2faSetup() {
+             // TODO: Fetch actual QR code data (otpauth URL) and secret from backend
+             const otpAuthUrl = "otpauth://totp/IMAPMail:usuario@dominio.com?secret=ABCDEF1234567890&issuer=IMAPMail";
+             const secret = "ABCDEF1234567890"; // Should come from backend
+             qrCodeImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(otpAuthUrl)}`;
+             manualSetupCodeDisplay.textContent = secret.match(/.{1,4}/g).join(' '); // Format secret
+
+             faSetupSection.classList.remove('hidden');
+             backupCodesSection.classList.add('hidden'); // Hide backup codes during setup
+             document.getElementById('2faCode').value = ''; // Clear verification input
+             console.log("Showing 2FA Setup (using placeholder secret/QR). Needs backend integration.");
+        }
+
+        function verify2faCode() {
+            const code = document.getElementById('2faCode').value;
+            if (!/^\d{6}$/.test(code)) {
+                showFeedback('El código de verificación debe ser de 6 dígitos.', 'error');
+                return;
+            }
+            console.log("Verifying 2FA Code:", code);
+            // TODO: Send 'code' and the 'secret' (used to generate QR) to backend for verification
+            // Simulate successful verification
+            const verificationSuccess = true; // Replace with actual backend response
+
+            if (verificationSuccess) {
+                is2faEnabled = true;
+                update2faUI();
+                showFeedback('Autenticación de Dos Factores activada correctamente.', 'success');
+                // TODO: Fetch actual backup codes from backend after successful activation
+                populateBackupCodes(['BACKUP0001', 'BACKUP0002', 'BACKUP0003', 'BACKUP0004', 'BACKUP0005', 'BACKUP0006', 'BACKUP0007', 'BACKUP0008', 'BACKUP0009', 'BACKUP0010']);
+                backupCodesSection.classList.remove('hidden');
+                faSetupSection.classList.add('hidden'); // Hide setup section after success
+            } else {
+                showFeedback('El código de verificación es incorrecto.', 'error');
+            }
+        }
+
+        function disable2fa() {
+            // TODO: Send request to backend to disable 2FA
+            console.log("Requesting 2FA deactivation.");
+             // Simulate successful deactivation
+            const deactivationSuccess = true; // Replace with actual backend response
+
+            if (deactivationSuccess) {
+                 is2faEnabled = false;
+                 update2faUI();
+                 showFeedback('Autenticación de Dos Factores desactivada.', 'success');
+            } else {
+                 showFeedback('No se pudo desactivar la 2FA.', 'error');
+            }
+        }
+
+        function populateBackupCodes(codes) {
+            backupCodeList.innerHTML = ''; // Clear existing
+            if (codes && codes.length > 0) {
+                codes.forEach(code => {
+                    const li = document.createElement('li');
+                    li.textContent = code;
+                    backupCodeList.appendChild(li);
+                });
+            } else {
+                 backupCodeList.innerHTML = '<li>No hay códigos disponibles.</li>';
+            }
+        }
+
+        function generateNewBackupCodes() {
+             // TODO: Send request to backend to generate and retrieve new backup codes
+             console.log("Requesting new backup codes.");
+             // Simulate receiving new codes
+             const newCodes = Array.from({length: 10}, (_, i) => `NEWCODE${String(i).padStart(4, '0')}`);
+             populateBackupCodes(newCodes);
+             showFeedback('Nuevos códigos de respaldo generados (simulado).', 'success');
+        }
+
+         function downloadBackupCodes() {
+            const codes = Array.from(backupCodeList.querySelectorAll('li')).map(li => li.textContent).join('\n');
+            if (!codes || codes.startsWith('No hay')) {
+                showFeedback('No hay códigos de respaldo para descargar.', 'error');
+                return;
+            }
+            const blob = new Blob([`Códigos de Respaldo para ${primaryEmailInput.value}\nGuardar en un lugar seguro.\n\n${codes}`], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `codigos_respaldo_${primaryEmailInput.value.split('@')[0]}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            showFeedback('Descargando códigos de respaldo.', 'info');
+        }
+
+
+        // --- Active Sessions (Simulated) ---
+        function logoutSession(sessionId) {
+            console.log("Requesting logout for session:", sessionId);
+            // TODO: Send request to backend to terminate the session 'sessionId'
+            showFeedback(`Cerrando sesión ${sessionId} (simulado).`, 'success');
+            // Remove the row from the table visually after confirmation from backend
+             const rowToRemove = document.querySelector(`#activeSessionsList button[onclick="logoutSession('${sessionId}')"]`).closest('tr');
+             if (rowToRemove) {
+                 rowToRemove.remove();
+             }
+        }
+
+        function logoutAllOtherSessions() {
+             console.log("Requesting logout for all other sessions.");
+             // TODO: Send request to backend to terminate all sessions except the current one
+             showFeedback('Cerrando todas las demás sesiones (simulado).', 'success');
+             // Remove all rows except the current session visually
+             const allRows = document.querySelectorAll('#activeSessionsList tr');
+             allRows.forEach(row => {
+                 if (!row.querySelector('span.text-green-600')) { // If it's not the current session row
+                     row.remove();
+                 }
+             });
+        }
+
+
+        // --- Utility Functions ---
+        function showFeedback(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} shadow-md`; // Use alert-info, alert-success, alert-error
+            alertDiv.setAttribute('role', 'alert');
+
+            let iconClass = 'fas fa-info-circle'; // Default icon
+            if (type === 'success') iconClass = 'fas fa-check-circle';
+            if (type === 'error') iconClass = 'fas fa-exclamation-triangle';
+
+            alertDiv.innerHTML = `
+                <i class="${iconClass}"></i>
+                <span>${message}</span>
+                <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-transparent rounded-lg focus:ring-2 focus:ring-gray-400 p-1.5 hover:bg-gray-200 inline-flex h-8 w-8" onclick="this.parentElement.remove()">
+                   <span class="sr-only">Cerrar</span>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+            `;
+
+            feedbackArea.innerHTML = ''; // Clear previous messages
+            feedbackArea.appendChild(alertDiv);
+
+            // Optional: Auto-dismiss after a few seconds
+            // setTimeout(() => {
+            //     alertDiv.remove();
+            // }, 5000);
+        }
+
+    </script>
+
+</body>
+</html>

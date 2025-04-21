@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOCUMAIL Pro - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Root Variables --- */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6e45e2 0%, #88d3ce 100%);
+            --secondary-gradient: linear-gradient(135deg, #ff7b25 0%, #ffcc00 100%);
+            --dark-bg: #0f0f1a;
+            --darker-bg: #0a0a12;
+            --card-bg: #1a1a2e;
+            --card-hover: #24243e;
+            --accent-color: #6e45e2;
+            --accent-light: #88d3ce;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b8b8d1;
+            --danger-color: #f44336;
+            --danger-bg: rgba(244, 67, 54, 0.1);
+            --danger-border: 1px solid rgba(244, 67, 54, 0.3);
+            --transition-speed: 0.5s;
+            --glass-effect: rgba(26, 26, 46, 0.7);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --input-focus-bg: rgba(110, 69, 226, 0.1);
+            --input-focus-shadow: rgba(110, 69, 226, 0.2);
+        }
+
+        /* --- Light Theme Variables --- */
+        .light-theme {
+            --dark-bg: #f5f5f7; /* Light gray background */
+            --darker-bg: #e5e5ea; /* Slightly darker gray */
+            --card-bg: #ffffff; /* White card background */
+            --card-hover: #f0f0f5; /* Light hover for inputs */
+            --text-primary: #1a1a2e; /* Dark text */
+            --text-secondary: #4a4a4f; /* Medium dark text */
+            --danger-color: #d32f2f; /* Slightly darker red for light theme */
+            --danger-bg: rgba(244, 67, 54, 0.1); /* Keep similar */
+            --danger-border: 1px solid rgba(244, 67, 54, 0.3); /* Keep similar */
+            --glass-effect: rgba(255, 255, 255, 0.7); /* Lighter glass */
+            --glass-border: 1px solid rgba(0, 0, 0, 0.1); /* Darker border for glass */
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); /* Standard shadow */
+            --input-bg: rgba(0, 0, 0, 0.05); /* Darker input background */
+            --input-border: rgba(0, 0, 0, 0.1); /* Darker input border */
+            --input-focus-bg: rgba(110, 69, 226, 0.08); /* Lighter focus bg */
+            --input-focus-shadow: rgba(110, 69, 226, 0.15); /* Lighter focus shadow */
+        }
+
+        /* --- Basic Reset & Body Styling --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrollbars from particle canvas */
+            transition: background-color 0.3s, color 0.3s; /* Smooth theme transition */
+        }
+
+        /* --- Particle Background --- */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: var(--darker-bg);
+            transition: background-color 0.3s;
+        }
+
+        /* --- Login Container --- */
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 50px 40px;
+            background: var(--glass-effect);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            text-align: center;
+            z-index: 1;
+            animation: fadeIn 0.8s ease-out;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease, background-color 0.3s, border 0.3s, box-shadow 0.3s;
+        }
+
+        .login-container:hover {
+            transform: scale(1.02);
+        }
+
+        /* --- Logo --- */
+        .logo-container {
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-icon {
+            font-size: 36px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-right: 15px;
+            display: inline-block;
+        }
+
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 28px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        /* --- Form Elements --- */
+        .login-form h2 {
+            margin-bottom: 30px;
+            font-weight: 500;
+            font-size: 22px;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 16px 18px 16px 50px;
+            border-radius: 12px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .login-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+            transition: color 0.3s;
+        }
+
+        .login-input:focus {
+            background: var(--input-focus-bg);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--input-focus-shadow);
+        }
+
+        .login-input:focus + .input-icon {
+            color: var(--accent-light);
+        }
+
+        /* --- Options (Remember Me / Forgot Password) --- */
+        .options-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .remember-me input[type="checkbox"] {
+            margin-right: 8px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+            width: 15px;
+            height: 15px;
+        }
+
+        .forgot-password a {
+            color: var(--accent-light);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        /* Specific hover for light theme link */
+        .light-theme .forgot-password a {
+            color: var(--accent-color); /* Use darker accent for link in light mode */
+        }
+        .light-theme .forgot-password a:hover {
+            color: #5a37b8; /* Slightly darker purple */
+        }
+
+        .forgot-password a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        /* --- Submit Button --- */
+        .login-button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary-gradient);
+            color: white; /* Keep text white on gradient */
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(110, 69, 226, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        /* Adjust shadow for light theme */
+        .light-theme .login-button {
+            box-shadow: 0 4px 15px rgba(110, 69, 226, 0.2);
+        }
+
+        .login-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(110, 69, 226, 0.5);
+        }
+        .light-theme .login-button:hover {
+            box-shadow: 0 6px 20px rgba(110, 69, 226, 0.3);
+        }
+
+
+        .login-button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(110, 69, 226, 0.4);
+        }
+        .light-theme .login-button:active {
+            box-shadow: 0 3px 10px rgba(110, 69, 226, 0.25);
+        }
+
+
+        /* Ripple effect for button */
+        .login-button .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5); /* White ripple works on gradient */
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        /* --- Error Message --- */
+        .error-message {
+            color: var(--danger-color);
+            background-color: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.3s;
+            transition: color 0.3s, background-color 0.3s, border 0.3s;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 500px) {
+            .login-container {
+                padding: 40px 25px;
+                margin: 20px;
+                max-width: calc(100% - 40px);
+            }
+
+            .logo-icon {
+                font-size: 30px;
+            }
+
+            .logo-text {
+                font-size: 24px;
+            }
+
+            .login-form h2 {
+                font-size: 20px;
+                margin-bottom: 25px;
+            }
+
+            .options-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .forgot-password {
+                margin-top: 10px;
+            }
+
+            .login-button {
+                padding: 14px;
+                font-size: 15px;
+            }
+        }
+
+    </style>
+</head>
+<body class="light-theme">
+
+    <div id="particles-js"></div>
+
+    <div class="login-container">
+        <div class="logo-container">
+            <span class="logo-icon"><i class="fas fa-mail-bulk"></i></span>
+            <span class="logo-text">DOCUMAIL</span>
+        </div>
+
+        <form class="login-form" id="loginForm"> <h2>Welcome Back</h2>
+
+            <div class="input-group">
+                <input type="email" id="username" name="username" class="login-input" placeholder="Email Address" required autocomplete="username">
+                <i class="fas fa-envelope input-icon"></i>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password" name="password" class="login-input" placeholder="Password" required autocomplete="current-password">
+                <i class="fas fa-lock input-icon"></i>
+            </div>
+
+            <div class="options-group">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember"> Remember Me
+                </label>
+            
+            </div>
+
+            <div class="error-message" id="errorMessage">
+            </div>
+
+            <button type="submit" class="login-button">
+                Login <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+            </button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // --- Particle Configurations ---
+            const particlesDarkConfig = {
+                "particles": {
+                    "number": {"value": 60,"density": {"enable": true,"value_area": 800}},
+                    "color": {"value": "#6e45e2"}, // Dark theme particle color
+                    "shape": {"type": "circle"},
+                    "opacity": {"value": 0.4,"random": true,"anim": {"enable": true,"speed": 0.8,"opacity_min": 0.1,"sync": false}},
+                    "size": {"value": 4,"random": true,"anim": {"enable": false}},
+                    "line_linked": {"enable": true,"distance": 160,"color": "#88d3ce","opacity": 0.2,"width": 1}, // Dark theme line color
+                    "move": {"enable": true,"speed": 1.5,"direction": "none","random": true,"straight": false,"out_mode": "out","bounce": false,"attract": {"enable": false}}
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {"onhover": {"enable": true,"mode": "grab"},"onclick": {"enable": true,"mode": "push"},"resize": true},
+                    "modes": {"grab": {"distance": 150,"line_linked": {"opacity": 0.8}},"bubble": {"distance": 400,"size": 40,"duration": 2,"opacity": 8,"speed": 3},"repulse": {"distance": 200,"duration": 0.4},"push": {"particles_nb": 4},"remove": {"particles_nb": 2}}
+                },
+                "retina_detect": true
+            };
+
+            const particlesLightConfig = {
+                "particles": {
+                    "number": {"value": 70, "density": {"enable": true,"value_area": 800}}, // Slightly more particles for light
+                    "color": {"value": "#6e45e2"}, // Light theme particle color (using accent)
+                    "shape": {"type": "circle"},
+                    "opacity": {"value": 0.5, "random": true, "anim": {"enable": true, "speed": 1, "opacity_min": 0.2, "sync": false}}, // Slightly more opaque
+                    "size": {"value": 3, "random": true, "anim": {"enable": false}}, // Slightly smaller
+                    "line_linked": {"enable": true, "distance": 150, "color": "#6e45e2", "opacity": 0.3, "width": 1}, // Light theme line color (using accent)
+                    "move": {"enable": true, "speed": 1.8, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false, "attract": {"enable": false}}
+                },
+                "interactivity": { // Keep interactivity same
+                    "detect_on": "canvas",
+                    "events": {"onhover": {"enable": true,"mode": "grab"},"onclick": {"enable": true,"mode": "push"},"resize": true},
+                    "modes": {"grab": {"distance": 150,"line_linked": {"opacity": 0.8}},"bubble": {"distance": 400,"size": 40,"duration": 2,"opacity": 8,"speed": 3},"repulse": {"distance": 200,"duration": 0.4},"push": {"particles_nb": 4},"remove": {"particles_nb": 2}}
+                },
+                "retina_detect": true
+            };
+
+            // --- Initialize Particles Background based on theme ---
+            const body = document.body;
+            let currentParticlesConfig = body.classList.contains('light-theme') ? particlesLightConfig : particlesDarkConfig;
+            // Check if particlesJS function exists before calling
+            if (typeof particlesJS !== 'undefined') {
+                 particlesJS('particles-js', currentParticlesConfig);
+            } else {
+                 console.warn("particlesJS function not found. Particles background will not be initialized.");
+            }
+
+
+            // --- Ripple Effect for Login Button ---
+            const loginButton = document.querySelector('.login-button');
+            if (loginButton) {
+                loginButton.addEventListener('click', function(e) {
+                    // Clear previous ripples
+                    const existingRipple = this.querySelector('.ripple');
+                    if(existingRipple) {
+                        existingRipple.remove();
+                    }
+
+                    // Create ripple span
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+
+                    // Calculate position
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+
+                    // Apply styles
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+
+                    // Append ripple
+                    this.appendChild(ripple);
+
+                    // Remove ripple after animation ends (handled by CSS animation)
+                    ripple.addEventListener('animationend', () => {
+                         ripple.remove();
+                    });
+                });
+            }
+
+            // --- Form Submission Handling ---
+            const loginForm = document.getElementById('loginForm');
+            const errorMessageDiv = document.getElementById('errorMessage');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+
+
+            if (loginForm && errorMessageDiv && usernameInput && passwordInput) {
+                 loginForm.addEventListener("submit", async function (e) {
+                     e.preventDefault(); // Prevent default form submission and page reload
+
+                     const email = usernameInput.value;
+                     const password = passwordInput.value;
+
+                     // Basic client-side validation
+                     if (!email || !password) {
+                         errorMessageDiv.textContent = 'Please enter both email and password.';
+                         errorMessageDiv.style.display = 'block';
+                         return; // Stop the submission process
+                     }
+
+                     // Hide previous error message
+                     errorMessageDiv.style.display = 'none';
+                     // Optionally show a loading indicator
+
+                     try {
+                         const res = await fetch("http://localhost:3000/login", {
+                             method: "POST",
+                             headers: { "Content-Type": "application/json" },
+                             // Ensure credentials are sent with the request to allow session cookie setting
+                             credentials: 'include',
+                             body: JSON.stringify({ email, password })
+                         });
+
+                         const data = await res.json();
+
+                         if (res.ok) { // Check for successful HTTP status (200-299)
+                             if (data.success) {
+                                 // Login successful, redirect to the main email page
+                                 // The session cookie is automatically handled by the browser
+                                 console.log("Login successful, redirecting...");
+                                 window.location.href = "index.html"; // Redirect to your main email page
+                             } else {
+                                 // Server returned success: false, display server error message
+                                 errorMessageDiv.textContent = data.error || "Login failed. Please try again.";
+                                 errorMessageDiv.style.display = "block";
+                             }
+                         } else {
+                             // HTTP error status (e.g., 401, 500)
+                             errorMessageDiv.textContent = data.error || `Login failed with status: ${res.status}`;
+                             errorMessageDiv.style.display = "block";
+                         }
+
+                     } catch (err) {
+                         // Network errors or other issues
+                         console.error("Login Fetch Error:", err);
+                         errorMessageDiv.textContent = `An error occurred: ${err.message}. Please try again later.`;
+                         errorMessageDiv.style.display = "block";
+                     } finally {
+                         // Hide loading indicator (if shown)
+                     }
+                 });
+            }
+
+
+            // --- Optional: Add a way to toggle the theme for testing ---
+            // Example: Double-click the logo to toggle theme
+            const logoContainer = document.querySelector('.logo-container');
+            if (logoContainer) {
+                logoContainer.addEventListener('dblclick', () => {
+                    body.classList.toggle('light-theme');
+                    // Re-initialize particles with the correct config
+                    let newParticlesConfig = body.classList.contains('light-theme') ? particlesLightConfig : particlesDarkConfig;
+                    // Destroy existing particles instance if pJS is available
+                    if (typeof particlesJS !== 'undefined' && window.pJSDom && window.pJSDom.length > 0) {
+                        window.pJSDom[0].pJS.fn.vendors.destroypJS();
+                        window.pJSDom = []; // Clear the array
+                    }
+                    // Re-initialize particles if the function exists
+                    if (typeof particlesJS !== 'undefined') {
+                         particlesJS('particles-js', newParticlesConfig);
+                    } else {
+                         console.warn("particlesJS function not found. Cannot re-initialize particles.");
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
